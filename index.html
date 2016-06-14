@@ -14,30 +14,71 @@
 
 <script type="text/javascript">
 
-var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+
+var WIDTH = 800;
+var HEIGHT = 600;
+var CENTER_X = WIDTH/2;
+var CENTER_Y = HEIGHT/2;
+
+var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
 var base;
+var button1;
+var button1Tween;
+var returnButton;
 
 function preload() {
 
     game.load.image('base', 'assets/firstaid.png');
+    game.load.image('button1', 'assets/button1.png');
+    game.load.image('returnButton', 'assets/return.png');
 
 }
 
 function create() {
 
-    base = game.add.sprite(400, 300, 'base');
+    base = game.add.sprite(CENTER_X, CENTER_Y, 'base');
     base.inputEnabled = true;
     base.anchor.set(0.5);
     base.events.onInputDown.add(openMenu, this);
+
+    button1 = game.add.sprite(CENTER_X, CENTER_Y+50, 'button1');
+    button1.inputEnabled = true;
+    button1.anchor.set(0.5);
+    button1.alpha = 0.5;
+    button1.visible = false;
+    //button1.events.onInputDown.add(openMenu, this);
+
+    returnButton = game.add.sprite(CENTER_X, CENTER_Y+100, 'returnButton');
+    returnButton.inputEnabled = true;
+    returnButton.anchor.set(0.5);
+    returnButton.visible = false;
+    returnButton.events.onInputDown.add(closeMenu, this);
+    //returnButton.alpha = 0.5;
+
 }
 
 function openMenu()
 {
+    button1.visible = true;
+    returnButton.visible = true;
+    button1Tween = game.add.tween(button1).to({alpha: 1, x: CENTER_X - 50, y: CENTER_Y -50}, 300, Phaser.Easing.Linear.In, true);
+    
 
-    
-    
 }
+
+function closeMenu()
+{
+    base.x += 5;
+
+    returnButton.visible = false;
+
+
+}
+
+
+
 
 function update() {
     
