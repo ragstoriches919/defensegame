@@ -23,10 +23,13 @@ var CENTER_Y = HEIGHT/2;
 
 var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
+var score = 0;
+var scoreText;
 var base;
 var button1;
 var button1Tween;
 var returnButton;
+
 
 function preload() {
 
@@ -38,18 +41,21 @@ function preload() {
 
 function create() {
 
+    //base object
     base = game.add.sprite(CENTER_X, CENTER_Y, 'base');
     base.inputEnabled = true;
     base.anchor.set(0.5);
     base.events.onInputDown.add(openMenu, this);
 
+    //button 1 object
     button1 = game.add.sprite(CENTER_X, CENTER_Y+50, 'button1');
     button1.inputEnabled = true;
     button1.anchor.set(0.5);
     button1.alpha = 0.5;
     button1.visible = false;
-    //button1.events.onInputDown.add(openMenu, this);
+    button1.events.onInputDown.add(addScore, this);
 
+    //the backwards arrow button
     returnButton = game.add.sprite(CENTER_X, CENTER_Y+100, 'returnButton');
     returnButton.inputEnabled = true;
     returnButton.anchor.set(0.5);
@@ -57,25 +63,48 @@ function create() {
     returnButton.events.onInputDown.add(closeMenu, this);
     //returnButton.alpha = 0.5;
 
+    var style = { font: "32px Arial", fill: "#ff0044", align: "center" };
+    scoreText = game.add.text(0,0, "Score: " + score, style);
+    //scoreText.anchor.set(0.5);
+
+
 }
 
+//opens the menu when the base is clicked.
 function openMenu()
 {
     button1.visible = true;
     returnButton.visible = true;
-    button1Tween = game.add.tween(button1).to({alpha: 1, x: CENTER_X - 50, y: CENTER_Y -50}, 300, Phaser.Easing.Linear.In, true);
+    game.add.tween(button1).to({alpha: 1, x: CENTER_X - 50, y: CENTER_Y -50}, 300, Phaser.Easing.Linear.In, true);
     
 
 }
 
+//Closes the menu when the return button is clicked.
 function closeMenu()
 {
-    base.x += 5;
+
+    function makeInvisible()
+    {
+        button1.visible = false;
+        //base.x += 5;
+    }
 
     returnButton.visible = false;
-
+    closeTween = game.add.tween(button1).to({alpha: 0, x: CENTER_X, y:CENTER_Y + 50}, 300, Phaser.Easing.Linear.In, true);
+    closeTween.onComplete.add(makeInvisible, this)
 
 }
+
+//Increments the score when button1 is clicked.
+function addScore()
+{
+
+    score += 10;
+    scoreText.text = 'Score: ' + score;
+}
+
+
 
 
 
