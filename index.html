@@ -44,51 +44,72 @@ function create() {
 
     //base object
     base = game.add.sprite(CENTER_X, CENTER_Y, 'base');
-    base.inputEnabled = true;
     base.anchor.set(0.5);
+    base.inputEnabled = true;
     base.events.onInputDown.add(openMenu, this);
 
     //button 1 object
     button1 = game.add.sprite(CENTER_X, CENTER_Y+50, 'button1');
-    button1.inputEnabled = true;
     button1.anchor.set(0.5);
     button1.alpha = 0.5;
     button1.visible = false;
+    button1.inputEnabled = true;
     button1.events.onInputDown.add(addScore, this);
 
     //the backwards arrow button
     returnButton = game.add.sprite(CENTER_X, CENTER_Y+100, 'returnButton');
-    returnButton.inputEnabled = true;
     returnButton.anchor.set(0.5);
     returnButton.visible = false;
+    returnButton.inputEnabled = true;
     returnButton.events.onInputDown.add(closeMenu, this);
-    //returnButton.alpha = 0.5;
-
+    
+    //Score text
     var style = { font: "32px Arial", fill: "#ff0044", align: "center" };
     scoreText = game.add.text(0,0, "Score: " + score, style);
-    //scoreText.anchor.set(0.5);
+    
+    //the enemies group
+    enemies = game.add.group();
+
+    //add elements to the enemies group
+    for (var i = 0; i < 5; i++ ){
+        enemies.create(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy1' );
+        enemies.children[i].vx = Math.random()*2;
+        enemies.children[i].vy = 0.5;
+        enemies.children[i].anchor.set(0.5);
+        enemies.children[i].inputEnabled = true;
+        enemies.children[i].addScore = 10;
+        //enemies.children
+    }
+
 
 
 }
 
 //opens the menu when the base is clicked.
-function openMenu()
-{
+function openMenu(){
     button1.visible = true;
     returnButton.visible = true;
     game.add.tween(button1).to({alpha: 1, x: CENTER_X - 50, y: CENTER_Y -50}, 300, Phaser.Easing.Linear.In, true);
     
+}
+
+function enemyDestroyed(sprite){
+
+    score += sprite.addScore;
+    scoreText.text = 'Score: ' + score;
+    sprite.destroy;
+
 
 }
 
+
+
 //Closes the menu when the return button is clicked.
-function closeMenu()
-{
+function closeMenu(){
 
     function makeInvisible()
     {
         button1.visible = false;
-        //base.x += 5;
     }
 
     returnButton.visible = false;
@@ -98,19 +119,48 @@ function closeMenu()
 }
 
 //Increments the score when button1 is clicked.
-function addScore()
-{
+function addScore(){
 
-    score += 10;
     scoreText.text = 'Score: ' + score;
+
+}
+
+//Use: Returns the distance between two points'
+function distance(x1, y1, x2, y2){
+    sum = Math.pow((x2-x1),2) + Math.pow((y2-y1),2);
+    return Math.pow(sum, 0.5);
 }
 
 
-
-
-
-
 function update() {
+
+    //Move enemies to the left/right to get to the middle.
+    for (var i = 0; i< enemies.children.length; i++)
+    {
+
+        if (enemies.children[i].x <= 400){
+            
+            enemies.children[i].x += enemies.children[i].vx;
+        
+        }  else if (enemies.children[i].x > 400) {
+
+            enemies.children[i].x -= enemies.children[i].vx;
+        }
+    }
+
+    //Move enemies up/down to get to the middle.'
+    for (var i = 0; i< enemies.children.length; i++)
+    {
+
+        if (enemies.children[i].y <= 300){
+            
+            enemies.children[i].y += enemies.children[i].vy;
+        
+        }  else if (enemies.children[i].y > 300) {
+
+            enemies.children[i].y -= enemies.children[i].vy;
+        }
+    }  
     
 
 }
