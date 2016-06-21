@@ -2,7 +2,7 @@
 <html lang="en"> 
 <head> 
     <meta charset="UTF-8" />
-    <title>Phaser - Making your first game, part 1</title>
+    <title>Phaser - Defense Game!</title>
     <script type="text/javascript" src="js/phaser.min.js"></script>
     <style type="text/css">
         body {
@@ -23,12 +23,15 @@ var CENTER_Y = HEIGHT/2;
 
 var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
-var score = 0;
+var score = 50;
 var scoreText;
 var base;
 var button1;
 var button1Tween;
 var returnButton;
+
+var timer;
+var enemies;
 
 
 function preload() {
@@ -73,19 +76,42 @@ function create() {
     //add elements to the enemies group
     for (var i = 0; i < 5; i++ ){
         enemies.create(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy1' );
-        enemies.children[i].vx = Math.random()*2;
-        enemies.children[i].vy = 0.5;
+        enemies.children[i].vx = 0.75;
+        enemies.children[i].vy = 0.75;
         enemies.children[i].anchor.set(0.5);
         enemies.children[i].inputEnabled = true;
         enemies.children[i].addScore = 10;
-        //enemies.children
+        enemies.children[i].events.onInputDown.add(destroyClick, this);
+        
+
     }
+
+
+    //Timer-related things.
+    timer = game.time.create(false);
+    timer.loop(2000, addEnemy, this);
+    timer.start();
 
 
 
 }
 
-//opens the menu when the base is clicked.
+function addEnemy(){
+
+    var enemy = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy1');
+    enemy.vy = 0.75;
+    enemy.vx = 0.75;
+    enemy.anchor.set(0.5);
+    enemy.inputEnabled = true;
+    enemy.addScore = 10;
+    enemy.events.onInputDown.add(destroyClick, this);
+    enemies.create(enemy); //USE enemies.create() TO INITIALIZE
+    enemies.add(enemy); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
+
+}
+
+
+//Use: opens the menu when the base is clicked.
 function openMenu(){
     button1.visible = true;
     returnButton.visible = true;
@@ -93,12 +119,12 @@ function openMenu(){
     
 }
 
-function enemyDestroyed(sprite){
+//Use: Destroy enemy on click, add to score.
+function destroyClick(enemy){
 
-    score += sprite.addScore;
+    score += enemy.addScore;
     scoreText.text = 'Score: ' + score;
-    sprite.destroy;
-
+    enemy.destroy();
 
 }
 
@@ -120,9 +146,7 @@ function closeMenu(){
 
 //Increments the score when button1 is clicked.
 function addScore(){
-
     scoreText.text = 'Score: ' + score;
-
 }
 
 //Use: Returns the distance between two points'
@@ -131,8 +155,14 @@ function distance(x1, y1, x2, y2){
     return Math.pow(sum, 0.5);
 }
 
-
+//Use: The main update loop for the game.
 function update() {
+
+    // enemies.forEachAlive(function(enemy){
+
+    //     enemy.x += enemy.vx;
+
+    // })
 
     //Move enemies to the left/right to get to the middle.
     for (var i = 0; i< enemies.children.length; i++)
@@ -161,9 +191,23 @@ function update() {
             enemies.children[i].y -= enemies.children[i].vy;
         }
     }  
-    
 
+    //If an enemy reaches the base, destroy it, and subtract score.
+    for (var i = 0; i< enemies.children.length; i++){
+
+        if (distance(enemies.children[i].x, enemies.children[i].y, base.x, base.y ) <= 50) {
+            score -= enemies.children[i].addScore;
+            scoreText.text = 'Score: ' + score;
+            enemies.children[i].destroy();
+        }
+    }
 }
+
+
+
+
+
+
 
 </script>
 
