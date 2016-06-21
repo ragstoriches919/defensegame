@@ -25,6 +25,10 @@ var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '', { preload: preload, c
 
 var score = 50;
 var scoreText;
+
+var kills = 0;
+var killText;
+
 var base;
 var button1;
 var button1Tween;
@@ -40,6 +44,7 @@ function preload() {
     game.load.image('button1', 'assets/button1.png');
     game.load.image('returnButton', 'assets/return.png');
     game.load.image('enemy1', 'assets/enemy1.png');
+    game.load.image('enemy2', 'assets/enemy2.png');
 
 }
 
@@ -69,6 +74,8 @@ function create() {
     //Score text
     var style = { font: "32px Arial", fill: "#ff0044", align: "center" };
     scoreText = game.add.text(0,0, "Score: " + score, style);
+    killText = game.add.text(0,32, "Kills: " + kills, style);
+
     
     //the enemies group
     enemies = game.add.group();
@@ -83,7 +90,6 @@ function create() {
         enemies.children[i].addScore = 10;
         enemies.children[i].events.onInputDown.add(destroyClick, this);
         
-
     }
 
 
@@ -96,17 +102,37 @@ function create() {
 
 }
 
+//Use: Create and add an enemy to the enemies group.  Controlled by the timer.
 function addEnemy(){
 
-    var enemy = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy1');
-    enemy.vy = 0.75;
-    enemy.vx = 0.75;
-    enemy.anchor.set(0.5);
-    enemy.inputEnabled = true;
-    enemy.addScore = 10;
-    enemy.events.onInputDown.add(destroyClick, this);
-    enemies.create(enemy); //USE enemies.create() TO INITIALIZE
-    enemies.add(enemy); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
+    //Enemy 1
+    var enemy1 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy1');
+    enemy1.vy = 0.75;
+    enemy1.vx = 0.75;
+    enemy1.anchor.set(0.5);
+    enemy1.inputEnabled = true;
+    enemy1.addScore = 10;
+    enemy1.events.onInputDown.add(destroyClick, this);
+    enemies.create(enemy1); //USE enemies.create() TO INITIALIZE
+    enemies.add(enemy1); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
+
+    //Enemy 2
+    var enemy2 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy2');
+    enemy2.vy = 0.75;
+    enemy2.vx = 0.75;
+    enemy2.anchor.set(0.5);
+    enemy2.inputEnabled = true;
+    enemy2.addScore = 15;
+    enemy2.events.onInputDown.add(destroyClick, this);
+    enemies.create(enemy2); //USE enemies.create() TO INITIALIZE
+    enemies.add(enemy2); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
+
+    if (kills <=10){
+
+
+
+
+    }
 
 }
 
@@ -124,6 +150,10 @@ function destroyClick(enemy){
 
     score += enemy.addScore;
     scoreText.text = 'Score: ' + score;
+    
+    kills += 1;
+    killText.text = 'Kills: ' + kills;
+
     enemy.destroy();
 
 }
@@ -158,11 +188,6 @@ function distance(x1, y1, x2, y2){
 //Use: The main update loop for the game.
 function update() {
 
-    // enemies.forEachAlive(function(enemy){
-
-    //     enemy.x += enemy.vx;
-
-    // })
 
     //Move enemies to the left/right to get to the middle.
     for (var i = 0; i< enemies.children.length; i++)
