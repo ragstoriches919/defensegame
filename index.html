@@ -33,6 +33,7 @@ var base;
 var button1;
 var button1Tween;
 var returnButton;
+var pauseGame = false;
 
 var timer;
 var enemies;
@@ -105,32 +106,71 @@ function create() {
 //Use: Create and add an enemy to the enemies group.  Controlled by the timer.
 function addEnemy(){
 
-    //Enemy 1
-    var enemy1 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy1');
-    enemy1.vy = 0.75;
-    enemy1.vx = 0.75;
-    enemy1.anchor.set(0.5);
-    enemy1.inputEnabled = true;
-    enemy1.addScore = 10;
-    enemy1.events.onInputDown.add(destroyClick, this);
-    enemies.create(enemy1); //USE enemies.create() TO INITIALIZE
-    enemies.add(enemy1); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
 
-    //Enemy 2
-    var enemy2 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy2');
-    enemy2.vy = 0.75;
-    enemy2.vx = 0.75;
-    enemy2.anchor.set(0.5);
-    enemy2.inputEnabled = true;
-    enemy2.addScore = 15;
-    enemy2.events.onInputDown.add(destroyClick, this);
-    enemies.create(enemy2); //USE enemies.create() TO INITIALIZE
-    enemies.add(enemy2); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
+    function addEnemy1(){
 
-    if (kills <=10){
+        //Enemy 1
+        var enemy1 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy1');
+        enemy1.vy = 0.75;
+        enemy1.vx = 0.75;
+        enemy1.anchor.set(0.5);
+        enemy1.inputEnabled = true;
+        enemy1.addScore = 10;
+        enemy1.events.onInputDown.add(destroyClick, this);
+        enemy1.health = 1;
+        enemies.create(enemy1); //USE enemies.create() TO INITIALIZE
+        enemies.add(enemy1); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
+
+    }
 
 
+    function addEnemy2(){
 
+        //Enemy 2
+        var enemy2 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy2');
+        enemy2.vy = 0.75;
+        enemy2.vx = 0.75;
+        enemy2.anchor.set(0.5);
+        enemy2.inputEnabled = true;
+        enemy2.addScore = 15;
+        enemy2.events.onInputDown.add(destroyClick, this);
+        enemy2.health = 2;
+        enemies.create(enemy2); //USE enemies.create() TO INITIALIZE
+        enemies.add(enemy2); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
+
+    }
+    
+
+    if (kills <=8){
+        addEnemy1();
+
+       } else if(kills <= 16){
+        addEnemy1();
+        addEnemy2();
+
+       }
+    
+
+
+
+}
+
+//Use: Destroy enemy on click, add to score.
+function destroyClick(enemy){
+
+    //enemy loses health.
+    enemy.health -=1;
+
+    //if enemy has 0 or negative health, change score and kill text.
+    if (enemy.health <= 0){ 
+
+        score += enemy.addScore;
+        scoreText.text = 'Score: ' + score;
+        
+        kills += 1;
+        killText.text = 'Kills: ' + kills;
+
+        enemy.destroy();
 
     }
 
@@ -143,20 +183,12 @@ function openMenu(){
     returnButton.visible = true;
     game.add.tween(button1).to({alpha: 1, x: CENTER_X - 50, y: CENTER_Y -50}, 300, Phaser.Easing.Linear.In, true);
     
-}
-
-//Use: Destroy enemy on click, add to score.
-function destroyClick(enemy){
-
-    score += enemy.addScore;
-    scoreText.text = 'Score: ' + score;
     
-    kills += 1;
-    killText.text = 'Kills: ' + kills;
-
-    enemy.destroy();
-
+    pauseGame = true;
+    
 }
+
+
 
 
 
@@ -171,7 +203,7 @@ function closeMenu(){
     returnButton.visible = false;
     closeTween = game.add.tween(button1).to({alpha: 0, x: CENTER_X, y:CENTER_Y + 50}, 300, Phaser.Easing.Linear.In, true);
     closeTween.onComplete.add(makeInvisible, this)
-
+    pauseGame = false;
 }
 
 //Increments the score when button1 is clicked.
@@ -188,42 +220,43 @@ function distance(x1, y1, x2, y2){
 //Use: The main update loop for the game.
 function update() {
 
+    if (pauseGame == false) {
+        //Move enemies to the left/right to get to the middle.
+        for (var i = 0; i< enemies.children.length; i++)
+        {
 
-    //Move enemies to the left/right to get to the middle.
-    for (var i = 0; i< enemies.children.length; i++)
-    {
-
-        if (enemies.children[i].x <= 400){
+            if (enemies.children[i].x <= 400){
+                
+                enemies.children[i].x += enemies.children[i].vx;
             
-            enemies.children[i].x += enemies.children[i].vx;
-        
-        }  else if (enemies.children[i].x > 400) {
+            }  else if (enemies.children[i].x > 400) {
 
-            enemies.children[i].x -= enemies.children[i].vx;
+                enemies.children[i].x -= enemies.children[i].vx;
+            }
         }
-    }
 
-    //Move enemies up/down to get to the middle.'
-    for (var i = 0; i< enemies.children.length; i++)
-    {
+        //Move enemies up/down to get to the middle.'
+        for (var i = 0; i< enemies.children.length; i++)
+        {
 
-        if (enemies.children[i].y <= 300){
+            if (enemies.children[i].y <= 300){
+                
+                enemies.children[i].y += enemies.children[i].vy;
             
-            enemies.children[i].y += enemies.children[i].vy;
-        
-        }  else if (enemies.children[i].y > 300) {
+            }  else if (enemies.children[i].y > 300) {
 
-            enemies.children[i].y -= enemies.children[i].vy;
-        }
-    }  
+                enemies.children[i].y -= enemies.children[i].vy;
+            }
+        }  
 
-    //If an enemy reaches the base, destroy it, and subtract score.
-    for (var i = 0; i< enemies.children.length; i++){
+        //If an enemy reaches the base, destroy it, and subtract score.
+        for (var i = 0; i< enemies.children.length; i++){
 
-        if (distance(enemies.children[i].x, enemies.children[i].y, base.x, base.y ) <= 50) {
-            score -= enemies.children[i].addScore;
-            scoreText.text = 'Score: ' + score;
-            enemies.children[i].destroy();
+            if (distance(enemies.children[i].x, enemies.children[i].y, base.x, base.y ) <= 50) {
+                score -= enemies.children[i].addScore;
+                scoreText.text = 'Score: ' + score;
+                enemies.children[i].destroy();
+            }
         }
     }
 }
