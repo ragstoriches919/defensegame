@@ -51,6 +51,23 @@ function preload() {
 
 function create() {
 
+    //the enemies group
+    enemies = game.add.group();
+
+    //add elements to the enemies group
+    for (var i = 0; i < 5; i++ ){
+        enemies.create(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy1' );
+        enemies.children[i].vx = 0.75;
+        enemies.children[i].vy = 0.75;
+        enemies.children[i].anchor.set(0.5);
+        enemies.children[i].inputEnabled = true;
+        enemies.children[i].addScore = 10;
+        enemies.children[i].events.onInputDown.add(destroyClick, this);
+        
+    }
+
+
+
     //base object
     base = game.add.sprite(CENTER_X, CENTER_Y, 'base');
     base.anchor.set(0.5);
@@ -78,22 +95,6 @@ function create() {
     killText = game.add.text(0,32, "Kills: " + kills, style);
 
     
-    //the enemies group
-    enemies = game.add.group();
-
-    //add elements to the enemies group
-    for (var i = 0; i < 5; i++ ){
-        enemies.create(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy1' );
-        enemies.children[i].vx = 0.75;
-        enemies.children[i].vy = 0.75;
-        enemies.children[i].anchor.set(0.5);
-        enemies.children[i].inputEnabled = true;
-        enemies.children[i].addScore = 10;
-        enemies.children[i].events.onInputDown.add(destroyClick, this);
-        
-    }
-
-
     //Timer-related things.
     timer = game.time.create(false);
     timer.loop(2000, addEnemy, this);
@@ -158,20 +159,23 @@ function addEnemy(){
 //Use: Destroy enemy on click, add to score.
 function destroyClick(enemy){
 
-    //enemy loses health.
-    enemy.health -=1;
-
-    //if enemy has 0 or negative health, change score and kill text.
-    if (enemy.health <= 0){ 
-
-        score += enemy.addScore;
-        scoreText.text = 'Score: ' + score;
+    if (pauseGame == false) {
         
-        kills += 1;
-        killText.text = 'Kills: ' + kills;
+        //enemy loses health.
+        enemy.health -=1;
 
-        enemy.destroy();
+        //if enemy has 0 or negative health, change score and kill text.
+        if (enemy.health <= 0){ 
 
+            score += enemy.addScore;
+            scoreText.text = 'Score: ' + score;
+            
+            kills += 1;
+            killText.text = 'Kills: ' + kills;
+
+            enemy.destroy();
+
+        }
     }
 
 }
@@ -183,8 +187,9 @@ function openMenu(){
     returnButton.visible = true;
     game.add.tween(button1).to({alpha: 1, x: CENTER_X - 50, y: CENTER_Y -50}, 300, Phaser.Easing.Linear.In, true);
     
-    
+
     pauseGame = true;
+    timer.pause();
     
 }
 
@@ -204,6 +209,10 @@ function closeMenu(){
     closeTween = game.add.tween(button1).to({alpha: 0, x: CENTER_X, y:CENTER_Y + 50}, 300, Phaser.Easing.Linear.In, true);
     closeTween.onComplete.add(makeInvisible, this)
     pauseGame = false;
+
+    timer.resume();
+
+
 }
 
 //Increments the score when button1 is clicked.
