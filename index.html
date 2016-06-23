@@ -38,13 +38,16 @@ var pauseGame = false;
 var timer;
 var enemies;
 
-var bullets = 5;
-var maxBullets = 5;
+var bullets = 10;
+var maxBullets = 10;
+var bulletText;
 
 
 function preload() {
 
-    game.load.image('base', 'assets/firstaid.png');
+    game.load.image('bkg', 'assets/bkg.jpg');
+    game.load.image('bullet', 'assets/bullet.png');
+    game.load.image('base', 'assets/base.png');
     game.load.image('button1', 'assets/button1.png');
     game.load.image('returnButton', 'assets/return.png');
     game.load.image('enemy1', 'assets/enemy1.png');
@@ -56,6 +59,26 @@ function preload() {
 }
 
 function create() {
+
+    //background
+    bkg = game.add.sprite(CENTER_X, CENTER_Y, 'bkg');
+    bkg.anchor.set(0.5);
+    bkg.inputEnabled = true;
+    bkg.events.onInputDown.add(bkgClick, this);
+
+    //base object
+    base = game.add.sprite(CENTER_X, CENTER_Y, 'base');
+    base.anchor.set(0.5);
+    base.inputEnabled = true;
+    base.events.onInputDown.add(openMenu, this);
+
+
+    //bullet object
+    bullet = game.add.sprite(CENTER_X-30, CENTER_Y +50, 'bullet');
+    bullet.anchor.set(0.5);
+    bullet.inputEnabled = true;
+
+    
 
     //the enemies group
     enemies = game.add.group();
@@ -74,11 +97,7 @@ function create() {
 
 
 
-    //base object
-    base = game.add.sprite(CENTER_X, CENTER_Y, 'base');
-    base.anchor.set(0.5);
-    base.inputEnabled = true;
-    base.events.onInputDown.add(openMenu, this);
+
 
     //button 1 object
     button1 = game.add.sprite(CENTER_X, CENTER_Y+50, 'button1');
@@ -96,11 +115,17 @@ function create() {
     returnButton.events.onInputDown.add(closeMenu, this);
     
     //Score text
-    var style = { font: "32px Arial", fill: "#ff0044", align: "center" };
+    var style = { font: "32px Arial", fill: "#ffffff", align: "center" };
     scoreText = game.add.text(0,0, "Score: " + score, style);
     killText = game.add.text(0,32, "Kills: " + kills, style);
 
     
+    //bullet text
+    var style = { font: "32px Arial", fill: "#ffffff", align: "center" };
+    bulletText = game.add.text(CENTER_X + 15, CENTER_Y+50, "x" + bullets, style);
+    bulletText.anchor.set(0.5);
+
+
     //Timer-related things.
     timer = game.time.create(false);
     timer.loop(2000, addEnemy, this);
@@ -109,6 +134,17 @@ function create() {
 
 
 }
+
+//Use: If the player clicks the background, subtract a bullet.
+function bkgClick(){
+
+    bullets -=1;
+    bulletText.text = "x" + bullets;
+
+}
+
+
+
 
 //Use: Create and add an enemy to the enemies group.  Controlled by the timer.
 function addEnemy(){
@@ -238,7 +274,8 @@ function destroyClick(enemy){
 
     if (pauseGame == false) {
         
-        //enemy loses health.
+        //enemy loses health, and subtract a bullet.
+        bullets -= 1;
         enemy.health -=1;
         enemy.frame += 1;
 
