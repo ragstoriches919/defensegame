@@ -38,6 +38,9 @@ var pauseGame = false;
 var timer;
 var enemies;
 
+var bullets = 5;
+var maxBullets = 5;
+
 
 function preload() {
 
@@ -46,6 +49,9 @@ function preload() {
     game.load.image('returnButton', 'assets/return.png');
     game.load.image('enemy1', 'assets/enemy1.png');
     game.load.spritesheet('enemy2', 'assets/enemy2Sheet.png', 70, 70, 2);
+    game.load.spritesheet('enemy3', 'assets/enemy3Sheet.png', 70, 70, 3);
+    game.load.spritesheet('enemy4', 'assets/enemy4Sheet.png', 70, 70, 4);
+    game.load.spritesheet('enemy5', 'assets/enemy5Sheet.png', 70, 70, 5);
 
 }
 
@@ -129,31 +135,102 @@ function addEnemy(){
 
         //Enemy 2
         var enemy2 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy2');
-        enemy2.vy = 0.75;
-        enemy2.vx = 0.75;
+        enemy2.vy = 0.70;
+        enemy2.vx = 0.70;
         enemy2.anchor.set(0.5);
         enemy2.inputEnabled = true;
-        enemy2.addScore = 15;
+        enemy2.addScore = 20;
         enemy2.events.onInputDown.add(destroyClick, this);
         enemy2.health = 2;
         enemies.create(enemy2); //USE enemies.create() TO INITIALIZE
         enemies.add(enemy2); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
 
     }
+
+
+    function addEnemy3(){
+
+        //Enemy 2
+        var enemy3 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy3');
+        enemy3.vy = 0.60;
+        enemy3.vx = 0.60;
+        enemy3.anchor.set(0.5);
+        enemy3.inputEnabled = true;
+        enemy3.addScore = 30;
+        enemy3.events.onInputDown.add(destroyClick, this);
+        enemy3.health = 3;
+        enemies.create(enemy3); //USE enemies.create() TO INITIALIZE
+        enemies.add(enemy3); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
+
+    }
+
+    function addEnemy4(){
+
+        //Enemy 2
+        var enemy4 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy4');
+        enemy4.vy = 0.50;
+        enemy4.vx = 0.50;
+        enemy4.anchor.set(0.5);
+        enemy4.inputEnabled = true;
+        enemy4.addScore = 40;
+        enemy4.events.onInputDown.add(destroyClick, this);
+        enemy4.health = 4;
+        enemies.create(enemy4); //USE enemies.create() TO INITIALIZE
+        enemies.add(enemy4); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
+
+    }
+
+    function addEnemy5(){
+
+        //Enemy 2
+        var enemy5 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy5');
+        enemy5.vy = 0.40;
+        enemy5.vx = 0.40;
+        enemy5.anchor.set(0.5);
+        enemy5.inputEnabled = true;
+        enemy5.addScore = 50;
+        enemy5.events.onInputDown.add(destroyClick, this);
+        enemy5.health = 5;
+        enemies.create(enemy5); //USE enemies.create() TO INITIALIZE
+        enemies.add(enemy5); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
+
+    }
+    
+
     
 
     if (kills <= 5){
-        addEnemy1();
+        addEnemy5();
 
-       } else if(kills <= 16){
+       } else if(kills <= 20){
         addEnemy1();
         addEnemy2();
+        
+       } else if (kills <=35){
+
+        addEnemy1();
+        addEnemy2();
+        addEnemy3();
+
+       } else if (kills <=50){
+
+        addEnemy1();
+        addEnemy2();
+        addEnemy3();
+        addEnemy4();
+
+       }
+
+       else if (kills <=65){
+
+        addEnemy1();
+        addEnemy2();
+        addEnemy3();
+        addEnemy4();
+        addEnemy5();
 
        }
     
-
-
-
 }
 
 //Use: Destroy enemy on click, add to score.
