@@ -45,7 +45,7 @@ function preload() {
     game.load.image('button1', 'assets/button1.png');
     game.load.image('returnButton', 'assets/return.png');
     game.load.image('enemy1', 'assets/enemy1.png');
-    game.load.image('enemy2', 'assets/enemy2.png');
+    game.load.spritesheet('enemy2', 'assets/enemy2Sheet.png', 70, 70, 2);
 
 }
 
@@ -142,7 +142,7 @@ function addEnemy(){
     }
     
 
-    if (kills <=8){
+    if (kills <= 5){
         addEnemy1();
 
        } else if(kills <= 16){
@@ -163,6 +163,7 @@ function destroyClick(enemy){
         
         //enemy loses health.
         enemy.health -=1;
+        enemy.frame += 1;
 
         //if enemy has 0 or negative health, change score and kill text.
         if (enemy.health <= 0){ 
