@@ -115,7 +115,7 @@ function bkgClick(){
 //Use: Create and add an enemy to the enemies group.  Controlled by the timer.
 function addEnemy(){
     function addEnemy1(){
-        //Enemy 1
+        
         var enemy1 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy1');
         enemy1.vy = 0.75;
         enemy1.vx = 0.75;
@@ -128,7 +128,7 @@ function addEnemy(){
         enemies.add(enemy1); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
     }
     function addEnemy2(){
-        //Enemy 2
+        
         var enemy2 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy2');
         enemy2.vy = 0.70;
         enemy2.vx = 0.70;
@@ -141,7 +141,7 @@ function addEnemy(){
         enemies.add(enemy2); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
     }
     function addEnemy3(){
-        //Enemy 2
+       
         var enemy3 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy3');
         enemy3.vy = 0.60;
         enemy3.vx = 0.60;
@@ -154,7 +154,7 @@ function addEnemy(){
         enemies.add(enemy3); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
     }
     function addEnemy4(){
-        //Enemy 2
+        
         var enemy4 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy4');
         enemy4.vy = 0.50;
         enemy4.vx = 0.50;
@@ -167,7 +167,7 @@ function addEnemy(){
         enemies.add(enemy4); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
     }
     function addEnemy5(){
-        //Enemy 2
+        
         var enemy5 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy5');
         enemy5.vy = 0.40;
         enemy5.vx = 0.40;
@@ -214,6 +214,7 @@ function destroyClick(enemy){
         bullets -= 1;
         enemy.health -=1;
         enemy.frame += 1;
+
         //if enemy has 0 or negative health, change score and kill text.
         if (enemy.health <= 0){ 
             score += enemy.addScore;
@@ -236,7 +237,23 @@ function distance(x1, y1, x2, y2){
 //Use: After all bullets are used up, call this function to display the reload bar.
 function reloadBarTween(){
 
-    game.add.tween(reloadBar.scale).to({x: 1.5, alpha: 0}, 1000, Phaser.Easing.Out, true);
+    var reloadTween = game.add.tween(reloadBar.scale).to({x: 0.5}, 1000, Phaser.Easing.InOut, true);
+    reloadTween.onComplete.add(onComplete, this);
+
+    //Use: What to do after the tween finishes.
+    function onComplete(){
+
+        reloadBar.visible = false;
+        bulletText.visible = true;
+        bullet.visible = true;
+        
+        bullets = maxBullets;
+        bulletText.text = "x" + bullets;
+        
+
+
+    }
+
 
 }
 
@@ -274,9 +291,13 @@ function update() {
             }
         }
 
+        //What happens after all the bullets are used up?
         if (bullets <= 0) {
             
             reloadBar.visible = true;
+            bulletText.visible = false;
+            bullet.visible = false;
+            reloadBarTween();
         }
 
     }
