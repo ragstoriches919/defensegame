@@ -31,10 +31,9 @@ var returnButton;
 var pauseGame = false;
 var timer;
 var enemies;
-var bullets = 10;
-var maxBullets = 10;
+var bullets = 5;
+var maxBullets = 5;
 var bulletText;
-
 var testing;
 
 
@@ -44,6 +43,7 @@ function preload() {
     game.load.image('base', 'assets/base.png');
     game.load.image('button1', 'assets/button1.png');
     game.load.image('returnButton', 'assets/return.png');
+    game.load.image('reloadBar', 'assets/reloadBar.png');
     game.load.image('enemy1', 'assets/enemy1.png');
     game.load.spritesheet('enemy2', 'assets/enemy2Sheet.png', 70, 70, 2);
     game.load.spritesheet('enemy3', 'assets/enemy3Sheet.png', 70, 70, 3);
@@ -65,12 +65,18 @@ function create() {
 
     
     //bullet object
-    bullet = game.add.sprite(CENTER_X-30, CENTER_Y +50, 'bullet');
+    bullet = game.add.sprite(CENTER_X-30, CENTER_Y + 50, 'bullet');
     bullet.anchor.set(0.5);
     bullet.inputEnabled = true;
+
+    //reload bar object
+    reloadBar = game.add.sprite(CENTER_X - 45, CENTER_Y + 45, 'reloadBar');
+    reloadBar.scale.setTo(0.1, 0.33);
+    reloadBar.visible = false;
     
     //the enemies group
     enemies = game.add.group();
+
     //add elements to the enemies group
     for (var i = 0; i < 5; i++ ){
         enemies.create(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy1' );
@@ -82,20 +88,8 @@ function create() {
         enemies.children[i].events.onInputDown.add(destroyClick, this);
         
     }
-    //button 1 object
-    button1 = game.add.sprite(CENTER_X, CENTER_Y+50, 'button1');
-    button1.anchor.set(0.5);
-    button1.alpha = 0.5;
-    button1.visible = false;
-    button1.inputEnabled = true;
-    
 
-    //the backwards arrow button
-    returnButton = game.add.sprite(CENTER_X, CENTER_Y+100, 'returnButton');
-    returnButton.anchor.set(0.5);
-    returnButton.visible = false;
 
-    
     //Score text
     var style = { font: "32px Arial", fill: "#ffffff", align: "center" };
     scoreText = game.add.text(0,0, "Score: " + score, style);
@@ -105,16 +99,19 @@ function create() {
     var style = { font: "32px Arial", fill: "#ffffff", align: "center" };
     bulletText = game.add.text(CENTER_X + 15, CENTER_Y+50, "x" + bullets, style);
     bulletText.anchor.set(0.5);
+    
     //Timer-related things.
     timer = game.time.create(false);
     timer.loop(2000, addEnemy, this);
     timer.start();
 }
+
 //Use: If the player clicks the background, subtract a bullet.
 function bkgClick(){
     bullets -=1;
     bulletText.text = "x" + bullets;
 }
+
 //Use: Create and add an enemy to the enemies group.  Controlled by the timer.
 function addEnemy(){
     function addEnemy1(){
@@ -235,6 +232,14 @@ function distance(x1, y1, x2, y2){
     sum = Math.pow((x2-x1),2) + Math.pow((y2-y1),2);
     return Math.pow(sum, 0.5);
 }
+
+//Use: After all bullets are used up, call this function to display the reload bar.
+function reloadBarTween(){
+
+    game.add.tween(reloadBar.scale).to({x: 1.5, alpha: 0}, 1000, Phaser.Easing.Out, true);
+
+}
+
 //Use: The main update loop for the game.
 function update() {
     if (pauseGame == false) {
@@ -269,9 +274,11 @@ function update() {
             }
         }
 
-        if (bullets <= 0){
-            score -= 0.1;
+        if (bullets <= 0) {
+            
+            reloadBar.visible = true;
         }
+
     }
 }
 </script>
