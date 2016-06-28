@@ -15,36 +15,30 @@
 <script type="text/javascript">
 
 
-
 var WIDTH = 800;
 var HEIGHT = 600;
 var CENTER_X = WIDTH/2;
 var CENTER_Y = HEIGHT/2;
-
 var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '', { preload: preload, create: create, update: update });
-
 var score = 50;
 var scoreText;
-
 var kills = 0;
 var killText;
-
 var base;
 var button1;
 var button1Tween;
 var returnButton;
 var pauseGame = false;
-
 var timer;
 var enemies;
-
 var bullets = 10;
 var maxBullets = 10;
 var bulletText;
 
+var testing;
+
 
 function preload() {
-
     game.load.image('bkg', 'assets/bkg.jpg');
     game.load.image('bullet', 'assets/bullet.png');
     game.load.image('base', 'assets/base.png');
@@ -55,34 +49,28 @@ function preload() {
     game.load.spritesheet('enemy3', 'assets/enemy3Sheet.png', 70, 70, 3);
     game.load.spritesheet('enemy4', 'assets/enemy4Sheet.png', 70, 70, 4);
     game.load.spritesheet('enemy5', 'assets/enemy5Sheet.png', 70, 70, 5);
-
 }
-
 function create() {
-
+    
     //background
     bkg = game.add.sprite(CENTER_X, CENTER_Y, 'bkg');
     bkg.anchor.set(0.5);
     bkg.inputEnabled = true;
     bkg.events.onInputDown.add(bkgClick, this);
-
+    
     //base object
     base = game.add.sprite(CENTER_X, CENTER_Y, 'base');
     base.anchor.set(0.5);
     base.inputEnabled = true;
-    base.events.onInputDown.add(openMenu, this);
 
-
+    
     //bullet object
     bullet = game.add.sprite(CENTER_X-30, CENTER_Y +50, 'bullet');
     bullet.anchor.set(0.5);
     bullet.inputEnabled = true;
-
     
-
     //the enemies group
     enemies = game.add.group();
-
     //add elements to the enemies group
     for (var i = 0; i < 5; i++ ){
         enemies.create(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy1' );
@@ -94,64 +82,42 @@ function create() {
         enemies.children[i].events.onInputDown.add(destroyClick, this);
         
     }
-
-
-
-
-
     //button 1 object
     button1 = game.add.sprite(CENTER_X, CENTER_Y+50, 'button1');
     button1.anchor.set(0.5);
     button1.alpha = 0.5;
     button1.visible = false;
     button1.inputEnabled = true;
-    button1.events.onInputDown.add(addScore, this);
+    
 
     //the backwards arrow button
     returnButton = game.add.sprite(CENTER_X, CENTER_Y+100, 'returnButton');
     returnButton.anchor.set(0.5);
     returnButton.visible = false;
-    returnButton.inputEnabled = true;
-    returnButton.events.onInputDown.add(closeMenu, this);
+
     
     //Score text
     var style = { font: "32px Arial", fill: "#ffffff", align: "center" };
     scoreText = game.add.text(0,0, "Score: " + score, style);
     killText = game.add.text(0,32, "Kills: " + kills, style);
-
     
     //bullet text
     var style = { font: "32px Arial", fill: "#ffffff", align: "center" };
     bulletText = game.add.text(CENTER_X + 15, CENTER_Y+50, "x" + bullets, style);
     bulletText.anchor.set(0.5);
-
-
     //Timer-related things.
     timer = game.time.create(false);
     timer.loop(2000, addEnemy, this);
     timer.start();
-
-
-
 }
-
 //Use: If the player clicks the background, subtract a bullet.
 function bkgClick(){
-
     bullets -=1;
     bulletText.text = "x" + bullets;
-
 }
-
-
-
-
 //Use: Create and add an enemy to the enemies group.  Controlled by the timer.
 function addEnemy(){
-
-
     function addEnemy1(){
-
         //Enemy 1
         var enemy1 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy1');
         enemy1.vy = 0.75;
@@ -163,12 +129,8 @@ function addEnemy(){
         enemy1.health = 1;
         enemies.create(enemy1); //USE enemies.create() TO INITIALIZE
         enemies.add(enemy1); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
-
     }
-
-
     function addEnemy2(){
-
         //Enemy 2
         var enemy2 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy2');
         enemy2.vy = 0.70;
@@ -180,12 +142,8 @@ function addEnemy(){
         enemy2.health = 2;
         enemies.create(enemy2); //USE enemies.create() TO INITIALIZE
         enemies.add(enemy2); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
-
     }
-
-
     function addEnemy3(){
-
         //Enemy 2
         var enemy3 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy3');
         enemy3.vy = 0.60;
@@ -197,11 +155,8 @@ function addEnemy(){
         enemy3.health = 3;
         enemies.create(enemy3); //USE enemies.create() TO INITIALIZE
         enemies.add(enemy3); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
-
     }
-
     function addEnemy4(){
-
         //Enemy 2
         var enemy4 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy4');
         enemy4.vy = 0.50;
@@ -213,11 +168,8 @@ function addEnemy(){
         enemy4.health = 4;
         enemies.create(enemy4); //USE enemies.create() TO INITIALIZE
         enemies.add(enemy4); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
-
     }
-
     function addEnemy5(){
-
         //Enemy 2
         var enemy5 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy5');
         enemy5.vy = 0.40;
@@ -229,168 +181,99 @@ function addEnemy(){
         enemy5.health = 5;
         enemies.create(enemy5); //USE enemies.create() TO INITIALIZE
         enemies.add(enemy5); //USE enemies.ADD() TO ACTUALLY ADD ENEMIES!
-
     }
     
-
     
-
     if (kills <= 5){
         addEnemy5();
-
        } else if(kills <= 20){
         addEnemy1();
         addEnemy2();
         
        } else if (kills <=35){
-
         addEnemy1();
         addEnemy2();
         addEnemy3();
-
        } else if (kills <=50){
-
         addEnemy1();
         addEnemy2();
         addEnemy3();
         addEnemy4();
-
        }
-
        else if (kills <=65){
-
         addEnemy1();
         addEnemy2();
         addEnemy3();
         addEnemy4();
         addEnemy5();
-
        }
     
 }
-
 //Use: Destroy enemy on click, add to score.
 function destroyClick(enemy){
-
     if (pauseGame == false) {
         
         //enemy loses health, and subtract a bullet.
         bullets -= 1;
         enemy.health -=1;
         enemy.frame += 1;
-
         //if enemy has 0 or negative health, change score and kill text.
         if (enemy.health <= 0){ 
-
             score += enemy.addScore;
             scoreText.text = 'Score: ' + score;
             
             kills += 1;
             killText.text = 'Kills: ' + kills;
-
             enemy.destroy();
-
         }
     }
-
 }
 
-
-//Use: opens the menu when the base is clicked.
-function openMenu(){
-    button1.visible = true;
-    returnButton.visible = true;
-    game.add.tween(button1).to({alpha: 1, x: CENTER_X - 50, y: CENTER_Y -50}, 300, Phaser.Easing.Linear.In, true);
-    
-
-    pauseGame = true;
-    timer.pause();
-    
-}
-
-
-
-
-
-//Closes the menu when the return button is clicked.
-function closeMenu(){
-
-    function makeInvisible()
-    {
-        button1.visible = false;
-    }
-
-    returnButton.visible = false;
-    closeTween = game.add.tween(button1).to({alpha: 0, x: CENTER_X, y:CENTER_Y + 50}, 300, Phaser.Easing.Linear.In, true);
-    closeTween.onComplete.add(makeInvisible, this)
-    pauseGame = false;
-
-    timer.resume();
-
-
-}
-
-//Increments the score when button1 is clicked.
-function addScore(){
-    scoreText.text = 'Score: ' + score;
-}
 
 //Use: Returns the distance between two points'
 function distance(x1, y1, x2, y2){
     sum = Math.pow((x2-x1),2) + Math.pow((y2-y1),2);
     return Math.pow(sum, 0.5);
 }
-
 //Use: The main update loop for the game.
 function update() {
-
     if (pauseGame == false) {
         //Move enemies to the left/right to get to the middle.
         for (var i = 0; i< enemies.children.length; i++)
         {
-
             if (enemies.children[i].x <= 400){
                 
                 enemies.children[i].x += enemies.children[i].vx;
             
             }  else if (enemies.children[i].x > 400) {
-
                 enemies.children[i].x -= enemies.children[i].vx;
             }
         }
-
         //Move enemies up/down to get to the middle.'
         for (var i = 0; i< enemies.children.length; i++)
         {
-
             if (enemies.children[i].y <= 300){
                 
                 enemies.children[i].y += enemies.children[i].vy;
             
             }  else if (enemies.children[i].y > 300) {
-
                 enemies.children[i].y -= enemies.children[i].vy;
             }
         }  
-
         //If an enemy reaches the base, destroy it, and subtract score.
         for (var i = 0; i< enemies.children.length; i++){
-
             if (distance(enemies.children[i].x, enemies.children[i].y, base.x, base.y ) <= 50) {
                 score -= enemies.children[i].addScore;
                 scoreText.text = 'Score: ' + score;
                 enemies.children[i].destroy();
             }
         }
+
+        if (bullets <= 0){
+            score -= 0.1;
+        }
     }
 }
-
-
-
-
-
-
-
 </script>
 
 </body>
