@@ -20,21 +20,26 @@ var HEIGHT = 600;
 var CENTER_X = WIDTH/2;
 var CENTER_Y = HEIGHT/2;
 var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '', { preload: preload, create: create, update: update });
-var score = 50;
+
+var startScore = 0;
+var score = startScore;
 var scoreText;
 var kills = 0;
 var killText;
 var base;
 var button1;
 var button1Tween;
-var returnButton;
+var restartButton;
 var pauseGame = false;
 var timer;
 var enemies;
+var upgrades;
 var bullets = 5;
 var maxBullets = 5;
 var bulletText;
 var testing;
+var reloading = false;
+var alive = true;
 
 
 function preload() {
@@ -42,14 +47,18 @@ function preload() {
     game.load.image('bullet', 'assets/bullet.png');
     game.load.image('base', 'assets/base.png');
     game.load.image('button1', 'assets/button1.png');
-    game.load.image('returnButton', 'assets/return.png');
+    game.load.image('restartButton', 'assets/return.png');
     game.load.image('reloadBar', 'assets/reloadBar.png');
     game.load.image('enemy1', 'assets/enemy1.png');
     game.load.spritesheet('enemy2', 'assets/enemy2Sheet.png', 70, 70, 2);
     game.load.spritesheet('enemy3', 'assets/enemy3Sheet.png', 70, 70, 3);
     game.load.spritesheet('enemy4', 'assets/enemy4Sheet.png', 70, 70, 4);
     game.load.spritesheet('enemy5', 'assets/enemy5Sheet.png', 70, 70, 5);
+    game.load.image('areaBomb', 'assets/diamond.png');
+
+
 }
+
 function create() {
     
     //background
@@ -57,13 +66,18 @@ function create() {
     bkg.anchor.set(0.5);
     bkg.inputEnabled = true;
     bkg.events.onInputDown.add(bkgClick, this);
+
+    restartButton = game.add.sprite(CENTER_X, CENTER_Y, 'restartButton');
+    restartButton.anchor.set(0.5);
+    restartButton.visible = false;
+    restartButton.inputEnabled = true;
+    restartButton.events.onInputDown.add(restartGame, this);
     
     //base object
     base = game.add.sprite(CENTER_X, CENTER_Y, 'base');
     base.anchor.set(0.5);
     base.inputEnabled = true;
 
-    
     //bullet object
     bullet = game.add.sprite(CENTER_X-30, CENTER_Y + 50, 'bullet');
     bullet.anchor.set(0.5);
@@ -77,18 +91,8 @@ function create() {
     //the enemies group
     enemies = game.add.group();
 
-    //add elements to the enemies group
-    for (var i = 0; i < 5; i++ ){
-        enemies.create(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy1' );
-        enemies.children[i].vx = 0.75;
-        enemies.children[i].vy = 0.75;
-        enemies.children[i].anchor.set(0.5);
-        enemies.children[i].inputEnabled = true;
-        enemies.children[i].addScore = 10;
-        enemies.children[i].events.onInputDown.add(destroyClick, this);
-        
-    }
-
+    //the upgrades group
+    upgrades = game.add.group();
 
     //Score text
     var style = { font: "32px Arial", fill: "#ffffff", align: "center" };
@@ -97,26 +101,160 @@ function create() {
     
     //bullet text
     var style = { font: "32px Arial", fill: "#ffffff", align: "center" };
-    bulletText = game.add.text(CENTER_X + 15, CENTER_Y+50, "x" + bullets, style);
+    bulletText = game.add.text(CENTER_X + 15, CENTER_Y + 50, "x" + bullets, style);
     bulletText.anchor.set(0.5);
     
-    //Timer-related things.
+    //Enemy timer-related things.
     timer = game.time.create(false);
     timer.loop(2000, addEnemy, this);
     timer.start();
+
+    //Upgrade timer-related things.
+    upgradeTimer = game.time.create(false);
+    upgradeTimer.loop(3000, addUpgrade, this);
+    upgradeTimer.start();
 }
 
-//Use: If the player clicks the background, subtract a bullet.
-function bkgClick(){
-    bullets -=1;
-    bulletText.text = "x" + bullets;
+
+//Use: Create and add upgrades to the upgrades group.
+function addUpgrade(){
+
+    var startX;
+    var startY;
+
+    function getStartingPositions(){
+
+        var rollDie = Math.random();
+
+        //top
+        if (rollDie < 0.25) {
+
+            startX = Math.random() * WIDTH;
+            startY = 0 - Math.random() * 200;
+
+        //bottom
+        }else if (rollDie < 0.5){
+            
+            startX = Math.random() * WIDTH;
+            startY = HEIGHT + Math.random() * 200;
+
+        //left
+        }else if (rollDie < 0.75){
+            
+            startX = 0 - Math.random() * 200;
+            startY = Math.random() * HEIGHT;
+
+        //right
+        }else {
+
+            startX = WIDTH + Math.random() * 200;
+            startY = Math.random() * HEIGHT;
+
+        }
+    }
+
+    function addAreaBomb(){
+        var areaBomb = game.add.sprite(startX, startY, 'areaBomb');
+        areaBomb.vy = 1.5;
+        areaBomb.vx = 1.5;
+        areaBomb.anchor.set(0.5);
+        areaBomb.inputEnabled = true;
+        areaBomb.events.onInputDown.add(getAreaBomb, this);
+        upgrades.create(areaBomb); //INITIALIZE
+        upgrades.add(areaBomb); //ACTUALLY ADD UPGRADES!
+    }
+
+    function addClip(){
+        var clip = game.add.sprite(startX, startY, 'bullet');
+        clip.vy = 1.5;
+        clip.vx = 1.5;
+        clip.anchor.set(0.5);
+        clip.inputEnabled = true;
+        clip.events.onInputDown.add(getClip, this);
+        upgrades.create(clip); //INITIALIZE
+        upgrades.add(clip); //ACTUALLY ADD UPGRADES!
+    }
+
+
+    //Get the clip, add to max bullets.
+    function getClip(upgrade){
+        if (reloading == false){
+            
+            maxBullets += 2;
+            upgrade.destroy();
+
+        }
+    }
+
+    //Get the area bomb, destroy all enemies on screen.
+    function getAreaBomb(upgrade){
+
+        if (reloading == false) {
+            
+            //Destroy the enemies group, then reset it. 
+            enemies.destroy();
+            enemies = game.add.group();
+
+        }
+        upgrade.destroy();
+    }
+
+    getStartingPositions();
+    
+    var rollUpgradeDie = Math.random();
+
+    if (rollUpgradeDie <= 0.33){
+        addAreaBomb();
+
+    }else{
+        addClip();
+
+    }
 }
+
+
 
 //Use: Create and add an enemy to the enemies group.  Controlled by the timer.
 function addEnemy(){
+
+    var startX;
+    var startY;
+
+    function getStartingPositions(){
+
+        var rollDie = Math.random();
+
+        //top
+        if (rollDie < 0.25) {
+
+            startX = Math.random() * WIDTH;
+            startY = 0 - Math.random() * 200;
+
+        //bottom
+        }else if (rollDie < 0.5){
+            
+            startX = Math.random() * WIDTH;
+            startY = HEIGHT + Math.random() * 200;
+
+        //left
+        }else if (rollDie < 0.75){
+            
+            startX = 0 - Math.random() * 200;
+            startY = Math.random() * HEIGHT;
+
+        //right
+        }else {
+
+            startX = WIDTH + Math.random() * 200;
+            startY = Math.random() * HEIGHT;
+
+        }
+    }
+
     function addEnemy1(){
         
-        var enemy1 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy1');
+        getStartingPositions();
+        var enemy1 = game.add.sprite(startX, startY, 'enemy1');
         enemy1.vy = 0.75;
         enemy1.vx = 0.75;
         enemy1.anchor.set(0.5);
@@ -129,7 +267,8 @@ function addEnemy(){
     }
     function addEnemy2(){
         
-        var enemy2 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy2');
+        getStartingPositions();
+        var enemy2 = game.add.sprite(startX, startY, 'enemy2');
         enemy2.vy = 0.70;
         enemy2.vx = 0.70;
         enemy2.anchor.set(0.5);
@@ -142,7 +281,8 @@ function addEnemy(){
     }
     function addEnemy3(){
        
-        var enemy3 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy3');
+       getStartingPositions();
+        var enemy3 = game.add.sprite(startX, startY, 'enemy3');
         enemy3.vy = 0.60;
         enemy3.vx = 0.60;
         enemy3.anchor.set(0.5);
@@ -155,7 +295,8 @@ function addEnemy(){
     }
     function addEnemy4(){
         
-        var enemy4 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy4');
+        getStartingPositions();
+        var enemy4 = game.add.sprite(startX, startY, 'enemy4');
         enemy4.vy = 0.50;
         enemy4.vx = 0.50;
         enemy4.anchor.set(0.5);
@@ -168,7 +309,8 @@ function addEnemy(){
     }
     function addEnemy5(){
         
-        var enemy5 = game.add.sprite(0 + Math.random() * 500, 0 + 250 * Math.random(), 'enemy5');
+        getStartingPositions();
+        var enemy5 = game.add.sprite(startX, startY, 'enemy5');
         enemy5.vy = 0.40;
         enemy5.vx = 0.40;
         enemy5.anchor.set(0.5);
@@ -182,7 +324,8 @@ function addEnemy(){
     
     
     if (kills <= 5){
-        addEnemy5();
+        addEnemy1();
+
        } else if(kills <= 20){
         addEnemy1();
         addEnemy2();
@@ -191,27 +334,29 @@ function addEnemy(){
         addEnemy1();
         addEnemy2();
         addEnemy3();
+
        } else if (kills <=50){
         addEnemy1();
         addEnemy2();
         addEnemy3();
         addEnemy4();
-       }
-       else if (kills <=65){
+
+       }else if (kills <=65){
         addEnemy1();
         addEnemy2();
         addEnemy3();
         addEnemy4();
         addEnemy5();
        }
-    
 }
+
+
+
 //Use: Destroy enemy on click, add to score.
 function destroyClick(enemy){
-    if (pauseGame == false) {
+    if (reloading == false) {
         
         //enemy loses health, and subtract a bullet.
-        bullets -= 1;
         enemy.health -=1;
         enemy.frame += 1;
 
@@ -228,38 +373,71 @@ function destroyClick(enemy){
 }
 
 
+
+
 //Use: Returns the distance between two points'
 function distance(x1, y1, x2, y2){
     sum = Math.pow((x2-x1),2) + Math.pow((y2-y1),2);
     return Math.pow(sum, 0.5);
 }
 
-//Use: After all bullets are used up, call this function to display the reload bar.
-function reloadBarTween(){
 
-    var reloadTween = game.add.tween(reloadBar.scale).to({x: 0.5}, 1000, Phaser.Easing.InOut, true);
-    reloadTween.onComplete.add(onComplete, this);
+//Use: If the player clicks the background, subtract a bullet.
+function bkgClick(){
+    
+    if (reloading == false){
+        bullets -= 1;
+        bulletText.text = "x" + bullets;
+    }
+}
 
-    //Use: What to do after the tween finishes.
-    function onComplete(){
 
-        reloadBar.visible = false;
-        bulletText.visible = true;
-        bullet.visible = true;
+
+var maxReloadTimer = 60;
+var reloadTimer = maxReloadTimer;
+
+function startReloadTimer(){
+
+    reloadTimer -=1;
+    reloading = true;
+    reloadBar.visible = true;
+    bulletText.visible = false;
+    bullet.visible = false;
+
+    var reloadBarTween = game.add.tween(reloadBar.scale);
+    reloadBarTween.onComplete.add(onComplete, this);
+
+
+    reloadBarTween.to({x: 0.5}, maxReloadTimer / 60 * 1000, Phaser.Easing.InOut, true);
+
+    if (reloadTimer <= 0){
         
         bullets = maxBullets;
         bulletText.text = "x" + bullets;
-        
+
+        reloading = false;
+        reloadTimer = maxReloadTimer;
+        reloadBar.visible = false;
+        bulletText.visible = true;
+        bullet.visible = true;
 
 
     }
 
-
+    //Make the reload bar small again after it gets activated.
+    function onComplete(){
+        reloadBar.scale.x = 0.1;
+    }
 }
+
+
+
+
 
 //Use: The main update loop for the game.
 function update() {
-    if (pauseGame == false) {
+    if (alive) {
+
         //Move enemies to the left/right to get to the middle.
         for (var i = 0; i< enemies.children.length; i++)
         {
@@ -291,17 +469,91 @@ function update() {
             }
         }
 
+        //Move upgrades to the left/right to get to the middle.
+        for (var i = 0; i< upgrades.children.length; i++)
+        {
+            if (upgrades.children[i].x <= 400){
+                
+                upgrades.children[i].x += upgrades.children[i].vx;
+            
+            }  else if (upgrades.children[i].x > 400) {
+                upgrades.children[i].x -= upgrades.children[i].vx;
+            }
+        }
+        //Move upgrades up/down to get to the middle.'
+        for (var i = 0; i< upgrades.children.length; i++)
+        {
+            if (upgrades.children[i].y <= 300){
+                
+                upgrades.children[i].y += upgrades.children[i].vy;
+            
+            }  else if (upgrades.children[i].y > 300) {
+                upgrades.children[i].y -= upgrades.children[i].vy;
+            }
+        }  
+        //If an upgrade reaches the base, destroy it, and subtract score.
+        for (var i = 0; i< upgrades.children.length; i++){
+            if (distance(upgrades.children[i].x, upgrades.children[i].y, base.x, base.y ) <= 50) {
+                
+                upgrades.children[i].destroy();
+            }
+        }
+
+
         //What happens after all the bullets are used up?
         if (bullets <= 0) {
-            
-            reloadBar.visible = true;
-            bulletText.visible = false;
-            bullet.visible = false;
-            reloadBarTween();
+            startReloadTimer();
         }
 
     }
+
+    //END GAME LOOP
+    if (score <= 0){
+
+        alive = false;
+        upgrades.destroy();
+        enemies.destroy();
+
+        base.visible = false;
+        bullet.visible = false;
+        bulletText.visible = false;
+
+        scoreText.anchor.set(0.5);
+        killText.anchor.set(0.5);
+
+        game.add.tween(scoreText).to({x: CENTER_X, y: CENTER_Y - 70}, 1000, Phaser.Easing.Linear.In, true);
+
+        game.add.tween(killText).to({x: CENTER_X, y: CENTER_Y + 70}, 1000, Phaser.Easing.Linear.In, true);
+
+        restartButton.visible = true;
+
+    }
 }
+
+
+function restartGame(){
+
+    alive = true;
+    
+    score = startScore;
+    scoreText.text = 'Score: ' + score;
+
+    kills = 0;
+    killText.text = 'Kills: ' + kills;
+
+    base.visible = true;
+    bullet.visible = true;
+    bulletText.visible = true;
+    //restartButton.visible = false;
+
+    //the enemies group
+    //enemies = game.add.group();
+
+    //the upgrades group
+    //upgrades = game.add.group();
+}
+
+
 </script>
 
 </body>
