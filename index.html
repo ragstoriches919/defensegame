@@ -218,12 +218,13 @@ function addUpgrade(){
 
 
 var level1Enemies = 2;
-var level2Enemies = 15;
-var level3Enemies = 25;
-var level4Enemies = 35;
-var level5Enemies = 45;
+var level2Enemies = 4;
+var level3Enemies = 6;
+var level4Enemies = 8;
+var level5Enemies = 10;
 
 var enemiesCaps = [ level1Enemies, level2Enemies, level3Enemies, level4Enemies, level5Enemies];
+var enemiesCapsText = [ "Wave 2!", "Wave 3!", "Wave 4!", "Wave 5!", "FINAL WAVE!"];
 //alert(enemiesCaps[1]);
 
 //Use: Create and add an enemy to the enemies group.  Controlled by the timer.
@@ -362,8 +363,8 @@ function addEnemy(){
        }
 }
 
-
-var waveText = game.add.text(CENTER_X, -100, "[Text]", style);
+//var waveTextStyle = { font: "48px Arial", fill: "#00ccff", align: "center" };
+//var waveText = game.add.text(CENTER_X, -100, "[Text]", waveTextStyle);
 
 //Use: Destroy enemy on click, add to score.
 function destroyClick(enemy){
@@ -383,47 +384,27 @@ function destroyClick(enemy){
             enemy.destroy();
         }  
 
+        // alert(kills + " " + enemiesCaps[2]);
 
-        for (var i = 0; i < enemiesCaps ; i++){
+        for (var i = 0; i < enemiesCaps.length ; i++){
 
             if (kills == enemiesCaps[i]){
 
-                base.x += 100;
-                // var style = { font: "48px Arial", fill: "#00ccff", align: "center" };
-                // waveText.anchor.set(0.5);
+                var waveTextStyle = { font: "48px Arial", fill: "#00ccff", align: "center" };
+                var waveText = game.add.text(CENTER_X, -100, "[Text]", waveTextStyle);
+                waveText.text = enemiesCapsText[i];
+                waveText.anchor.set(0.5);
                 
-                // var tween1 = game.add.tween(waveText).to( { y: 100 }, 750, Phaser.Easing.Bounce.In, true );
-                // var tween2 = game.add.tween(waveText).to( { alpha: 0 }, 3000, Phaser.Easing.Linear.In, true );
+                var tween1 = game.add.tween(waveText).to( { y: 100 }, 750, Phaser.Easing.Bounce.In, true );
+                var tween2 = game.add.tween(waveText).to( { alpha: 0 }, 3000, Phaser.Easing.Linear.In, true );
 
-                // tween2.onComplete.add(resetWaveText, this);
+                tween2.onComplete.add(resetWaveText, this);
 
 
 
             }
 
         }
-
-        // if (kills == level1Enemies){
-            
-        //     var style = { font: "48px Arial", fill: "#00ccff", align: "center" };
-        //     waveText = game.add.text(CENTER_X, -100, "Wave 2!", style);
-        //     waveText.anchor.set(0.5);
-            
-        //     var tween1 = game.add.tween(waveText).to( { y: 100 }, 750, Phaser.Easing.Bounce.In, true );
-        //     var tween2 = game.add.tween(waveText).to( { alpha: 0 }, 3000, Phaser.Easing.Linear.In, true );
-
-        //     tween2.onComplete.add(resetWaveText, this);
-
-        // }
-
-
-
-
-
-
-
-
-
 
         function resetWaveText(){
 
@@ -438,6 +419,7 @@ function destroyClick(enemy){
             }
 
         }
+
     }
 }
 
