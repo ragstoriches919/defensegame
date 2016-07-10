@@ -21,7 +21,7 @@ var CENTER_X = WIDTH/2;
 var CENTER_Y = HEIGHT/2;
 var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
-var startScore = 0;
+var startScore = 50;
 var score = startScore;
 var scoreText;
 var kills = 0;
@@ -34,12 +34,15 @@ var pauseGame = false;
 var timer;
 var enemies;
 var upgrades;
-var bullets = 5;
+var startBullets = 5;
+var bullets = startBullets;
 var maxBullets = 5;
 var bulletText;
 var testing;
 var reloading = false;
 var alive = true;
+
+
 
 
 function preload() {
@@ -67,6 +70,7 @@ function create() {
     bkg.inputEnabled = true;
     bkg.events.onInputDown.add(bkgClick, this);
 
+    //restart button
     restartButton = game.add.sprite(CENTER_X, CENTER_Y, 'restartButton');
     restartButton.anchor.set(0.5);
     restartButton.visible = false;
@@ -180,7 +184,7 @@ function addUpgrade(){
     function getClip(upgrade){
         if (reloading == false){
             
-            maxBullets += 2;
+            maxBullets += 1;
             upgrade.destroy();
 
         }
@@ -213,6 +217,14 @@ function addUpgrade(){
 }
 
 
+var level1Enemies = 2;
+var level2Enemies = 15;
+var level3Enemies = 25;
+var level4Enemies = 35;
+var level5Enemies = 45;
+
+var enemiesCaps = [ level1Enemies, level2Enemies, level3Enemies, level4Enemies, level5Enemies];
+//alert(enemiesCaps[1]);
 
 //Use: Create and add an enemy to the enemies group.  Controlled by the timer.
 function addEnemy(){
@@ -323,25 +335,25 @@ function addEnemy(){
     }
     
     
-    if (kills <= 5){
+    if (kills <= level1Enemies){
         addEnemy1();
 
-       } else if(kills <= 20){
+       } else if(kills <= level2Enemies){
         addEnemy1();
         addEnemy2();
         
-       } else if (kills <=35){
+       } else if (kills <=level3Enemies){
         addEnemy1();
         addEnemy2();
         addEnemy3();
 
-       } else if (kills <=50){
+       } else if (kills <=level4Enemies){
         addEnemy1();
         addEnemy2();
         addEnemy3();
         addEnemy4();
 
-       }else if (kills <=65){
+       }else if (kills <=level5Enemies){
         addEnemy1();
         addEnemy2();
         addEnemy3();
@@ -351,6 +363,7 @@ function addEnemy(){
 }
 
 
+var waveText = game.add.text(CENTER_X, -100, "[Text]", style);
 
 //Use: Destroy enemy on click, add to score.
 function destroyClick(enemy){
@@ -368,6 +381,62 @@ function destroyClick(enemy){
             kills += 1;
             killText.text = 'Kills: ' + kills;
             enemy.destroy();
+        }  
+
+
+        for (var i = 0; i < enemiesCaps ; i++){
+
+            if (kills == enemiesCaps[i]){
+
+                base.x += 100;
+                // var style = { font: "48px Arial", fill: "#00ccff", align: "center" };
+                // waveText.anchor.set(0.5);
+                
+                // var tween1 = game.add.tween(waveText).to( { y: 100 }, 750, Phaser.Easing.Bounce.In, true );
+                // var tween2 = game.add.tween(waveText).to( { alpha: 0 }, 3000, Phaser.Easing.Linear.In, true );
+
+                // tween2.onComplete.add(resetWaveText, this);
+
+
+
+            }
+
+        }
+
+        // if (kills == level1Enemies){
+            
+        //     var style = { font: "48px Arial", fill: "#00ccff", align: "center" };
+        //     waveText = game.add.text(CENTER_X, -100, "Wave 2!", style);
+        //     waveText.anchor.set(0.5);
+            
+        //     var tween1 = game.add.tween(waveText).to( { y: 100 }, 750, Phaser.Easing.Bounce.In, true );
+        //     var tween2 = game.add.tween(waveText).to( { alpha: 0 }, 3000, Phaser.Easing.Linear.In, true );
+
+        //     tween2.onComplete.add(resetWaveText, this);
+
+        // }
+
+
+
+
+
+
+
+
+
+
+        function resetWaveText(){
+
+            var tween3 = game.add.tween(waveText).to({y: -100}, 1000, Phaser.Easing.Bounce.Out, true);
+            tween3.onComplete.add(resetWaveAlpha, this);
+
+
+
+            function resetWaveAlpha(){
+
+                waveText.alpha = 1;
+            }
+
         }
     }
 }
@@ -408,7 +477,7 @@ function startReloadTimer(){
     reloadBarTween.onComplete.add(onComplete, this);
 
 
-    reloadBarTween.to({x: 0.5}, maxReloadTimer / 60 * 1000, Phaser.Easing.InOut, true);
+    reloadBarTween.to({x: 0.5}, maxReloadTimer / 60 * 1000, Phaser.Easing.Linear.In, true);
 
     if (reloadTimer <= 0){
         
@@ -521,9 +590,9 @@ function update() {
         scoreText.anchor.set(0.5);
         killText.anchor.set(0.5);
 
-        game.add.tween(scoreText).to({x: CENTER_X, y: CENTER_Y - 70}, 1000, Phaser.Easing.Linear.In, true);
+        game.add.tween(scoreText).to({x: CENTER_X, y: CENTER_Y - 70}, 500, Phaser.Easing.Linear.In, true);
 
-        game.add.tween(killText).to({x: CENTER_X, y: CENTER_Y + 70}, 1000, Phaser.Easing.Linear.In, true);
+        game.add.tween(killText).to({x: CENTER_X, y: CENTER_Y + 70}, 500, Phaser.Easing.Linear.In, true);
 
         restartButton.visible = true;
 
@@ -538,19 +607,29 @@ function restartGame(){
     score = startScore;
     scoreText.text = 'Score: ' + score;
 
+    bullets = startBullets;
+    bulletText.text = "x" + bullets;
+
+
     kills = 0;
     killText.text = 'Kills: ' + kills;
+
+    scoreText.anchor.set(0.0);
+    killText.anchor.set(0.0);
+    game.add.tween(scoreText).to({x: 0, y: 0}, 1000, Phaser.Easing.Linear.In, true);
+    game.add.tween(killText).to({x: 0, y: 32}, 1000, Phaser.Easing.Linear.In, true);
 
     base.visible = true;
     bullet.visible = true;
     bulletText.visible = true;
-    //restartButton.visible = false;
+    restartButton.visible = false;
 
     //the enemies group
-    //enemies = game.add.group();
+    enemies = game.add.group();
 
     //the upgrades group
-    //upgrades = game.add.group();
+    upgrades = game.add.group();
+
 }
 
 
