@@ -21,11 +21,12 @@ var CENTER_X = WIDTH/2;
 var CENTER_Y = HEIGHT/2;
 var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
-var startScore = 50;
+var startScore = 10;
 var score = startScore;
 var scoreText;
 var kills = 0;
 var killText;
+var gameOverText;
 var base;
 var button1;
 var button1Tween;
@@ -104,9 +105,14 @@ function create() {
     killText = game.add.text(0,32, "Kills: " + kills, style);
     
     //bullet text
-    var style = { font: "32px Arial", fill: "#ffffff", align: "center" };
-    bulletText = game.add.text(CENTER_X + 15, CENTER_Y + 50, "x" + bullets, style);
+    bulletText = game.add.text(CENTER_X + 12, CENTER_Y + 50, bullets + "/" + maxBullets, style); 
     bulletText.anchor.set(0.5);
+
+    // var gameOverStyle = { font: "36px Arial", fill: "#ffffff", align: "center" };
+    //game over text
+    gameOverText = game.add.text(CENTER_X, 100, "[Text]", style);
+    gameOverText.anchor.set(0.5);
+    gameOverText.visible = false;
     
     //Enemy timer-related things.
     timer = game.time.create(false);
@@ -186,6 +192,7 @@ function addUpgrade(){
             
             maxBullets += 1;
             upgrade.destroy();
+            bulletText.text = bullets + "/" + maxBullets;
 
         }
     }
@@ -217,11 +224,11 @@ function addUpgrade(){
 }
 
 
-var level1Enemies = 2;
-var level2Enemies = 4;
-var level3Enemies = 6;
-var level4Enemies = 8;
-var level5Enemies = 10;
+var level1Enemies = 5;
+var level2Enemies = 10;
+var level3Enemies = 20;
+var level4Enemies = 30;
+var level5Enemies = 40;
 
 var enemiesCaps = [ level1Enemies, level2Enemies, level3Enemies, level4Enemies, level5Enemies];
 var enemiesCapsText = [ "Wave 2!", "Wave 3!", "Wave 4!", "Wave 5!", "FINAL WAVE!"];
@@ -363,8 +370,6 @@ function addEnemy(){
        }
 }
 
-//var waveTextStyle = { font: "48px Arial", fill: "#00ccff", align: "center" };
-//var waveText = game.add.text(CENTER_X, -100, "[Text]", waveTextStyle);
 
 //Use: Destroy enemy on click, add to score.
 function destroyClick(enemy){
@@ -400,10 +405,7 @@ function destroyClick(enemy){
 
                 tween2.onComplete.add(resetWaveText, this);
 
-
-
             }
-
         }
 
         function resetWaveText(){
@@ -411,15 +413,11 @@ function destroyClick(enemy){
             var tween3 = game.add.tween(waveText).to({y: -100}, 1000, Phaser.Easing.Bounce.Out, true);
             tween3.onComplete.add(resetWaveAlpha, this);
 
-
-
             function resetWaveAlpha(){
 
                 waveText.alpha = 1;
             }
-
         }
-
     }
 }
 
@@ -438,13 +436,13 @@ function bkgClick(){
     
     if (reloading == false){
         bullets -= 1;
-        bulletText.text = "x" + bullets;
+        bulletText.text = bullets + "/" + maxBullets;
     }
 }
 
 
 
-var maxReloadTimer = 60;
+var maxReloadTimer = 120;
 var reloadTimer = maxReloadTimer;
 
 function startReloadTimer(){
@@ -464,7 +462,7 @@ function startReloadTimer(){
     if (reloadTimer <= 0){
         
         bullets = maxBullets;
-        bulletText.text = "x" + bullets;
+        bulletText.text = bullets + "/" + maxBullets;
 
         reloading = false;
         reloadTimer = maxReloadTimer;
@@ -484,9 +482,18 @@ function startReloadTimer(){
 
 
 
+// var gameOverStyle = { font: "36px Arial", fill: "#ffffff", align: "center" };
+// var gameOverText = game.add.text(CENTER_X,100, "[Text]", gameOverStyle);
+// gameOverText.anchor.set(0.5);
+// gameOverText.visible = false;
+
+
 
 //Use: The main update loop for the game.
 function update() {
+
+    // gameOverText.visible = true;
+
     if (alive) {
 
         //Move enemies to the left/right to get to the middle.
@@ -559,7 +566,23 @@ function update() {
     }
 
     //END GAME LOOP
-    if (score <= 0){
+    if (score <= 0 || kills == level5Enemies + 5){
+
+
+        if (score <=0){
+
+            gameOverText.visible = true;
+            gameOverText.text = "You Lose!";
+
+        }
+
+        if (kills == level5Enemies + 5){
+            
+
+            gameOverText.visible = true;
+            gameOverText.text = "You Win!";
+            
+        }
 
         alive = false;
         upgrades.destroy();
@@ -585,12 +608,14 @@ function update() {
 function restartGame(){
 
     alive = true;
+
+    gameOverText.visible = false;
     
     score = startScore;
     scoreText.text = 'Score: ' + score;
 
     bullets = startBullets;
-    bulletText.text = "x" + bullets;
+    bulletText.text = bullets + "/" + maxBullets;
 
 
     kills = 0;
